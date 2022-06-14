@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using kol2.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace kol2.Services
 {
@@ -14,9 +15,27 @@ namespace kol2.Services
         public Service(RepoDbContext repository) {
             _repository = repository;
         }
-        public async Task CreateAsync<T>(T entity) where T : class
+
+        public async Task DeleteMusician(int id)
         {
-            await _repository.Set<T>().AddAsync(entity);
+            var musician = new Musician {
+                IdMusician = id
+            };
+
+            _repository.Musicians.Remove(musician);
+            await this.SaveChangesAsync();
+        }
+
+        public IQueryable<Musician> GetMusicianById(int id)
+        {
+            return _repository.Musicians.Where(e => e.IdMusician == id);
+        }
+
+        public IQueryable<MusicianTrack> GetMusicianTracksById(int id)
+        {
+            return _repository.MusicianTracks
+                .Where(e => e.IdMusician == id)
+                .Include(e => e.Track);
         }
 
         public async Task SaveChangesAsync()
